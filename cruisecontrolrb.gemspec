@@ -1,3 +1,4 @@
+# -*- mode: ruby -*-
 require File.expand_path('../lib/cruise_control/version', __FILE__)
 
 Gem::Specification.new do |s|
@@ -24,6 +25,7 @@ Gem::Specification.new do |s|
     [ "rake", "0.8.7" ],
     [ "jquery-rails", '1.0.9' ],
     [ "abstract", "1.0.0" ],
+    [ "thin", nil ],
   ].each do |gem, version|
     s.add_dependency gem, version
   end
