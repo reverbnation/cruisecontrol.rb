@@ -185,6 +185,10 @@ EOF
     ].join(" || ")
   end
 
+  def bundle_command
+    project.bundle_command || Platform.bundle_command
+  end
+
   def rake
     # Simply calling rake is this convoluted due to idiosyncrasies of Windows, Debian and JRuby.
     # --nosearch flag here prevents CC.rb from building itself when a project has no Rakefile.
@@ -193,7 +197,7 @@ EOF
     maybe_trace   = CruiseControl::Log.verbose? ? " << '--trace'" : ""
     
     if project.uses_bundler?
-      %{BUNDLE_GEMFILE=#{project.gemfile} #{Platform.bundle_cmd} exec rake -e "load '#{cc_build_path}'; ARGV << '--nosearch'#{maybe_trace} << 'cc:build'; Rake.application.run; ARGV.clear"}
+      %{BUNDLE_GEMFILE=#{project.gemfile} #{bundle_command} exec rake -e "load '#{cc_build_path}'; ARGV << '--nosearch'#{maybe_trace} << 'cc:build'; Rake.application.run; ARGV.clear"}
     else  
       %{#{Platform.interpreter} -e "require 'rubygems' rescue nil; require 'rake'; load '#{cc_build_path}'; ARGV << '--nosearch'#{maybe_trace} << 'cc:build'; Rake.application.run; ARGV.clear"}
     end
@@ -254,7 +258,7 @@ EOF
   private
     
     def bundle(*args)
-      ( [ "BUNDLE_GEMFILE=#{project.gemfile}", Platform.bundle_cmd ] + args.flatten ).join(" ")
+      ( [ "BUNDLE_GEMFILE=#{project.gemfile}", bundle_command ] + args.flatten ).join(" ")
     end
 
 end

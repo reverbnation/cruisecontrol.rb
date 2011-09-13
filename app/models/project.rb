@@ -2,7 +2,7 @@
 # each time a build is triggered and yielded back to be configured by cruise_config.rb.
 class Project
   attr_reader :name, :plugins, :build_command, :rake_task, :config_tracker, :path, :settings, :config_file_content, :error_message
-  attr_accessor :source_control, :scheduler, :use_bundler, :gemfile, :bundler_args
+  attr_accessor :source_control, :scheduler, :use_bundler, :gemfile, :bundler_args, :bundle_command
 
   alias_method :id, :name
   
