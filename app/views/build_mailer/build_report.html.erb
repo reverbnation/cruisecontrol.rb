@@ -8,7 +8,9 @@ CHANGES
 <% unless @failures_and_errors.empty? -%>
 TEST FAILURES AND ERRORS
 -----------------------
-<%= @failures_and_errors %>
+<%   @failures_and_errors.each do |error| -%>
+<%= error.html_safe %>
+<%   end -%>
 
 <% end -%>
 See <%= "#{@build.url}" %> for details.
