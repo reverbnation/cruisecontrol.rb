@@ -5,11 +5,18 @@ class BuildLogParser
   TEST_ERROR_REGEX = /^\s+\d+\) Error:\n(.*):\n(.*)\n([\s\S]*?)\n\n/
   TEST_FAILURE_REGEX = /^\s+\d+\) Failure:\n([\S\s]*?)\n\n/
 
+  TEST_NEW_ERROR_REGEX = /^(?:\s+\d+\) )?Error:(.*)\n((?:^\s.*\n)+)([\s\S]*?)\n========/
+  TEST_NEW_FAILURE_REGEX = /^(?:\s+\d+\) )?Failure:([\S\s]*?)\n===========/
+
+  TEST_NEW_MESSAGE_REGEX = /^\s+(\S[\s\S]+?)\n\S/
+  TEST_NEW_STACK_TRACE_REGEX = /\)([\s\S]*)/
+  TEST_NEW_NAME_REGEX = /^\S+/
+
   RSPEC_ERROR_REGEX = /^(\S+) in '(.*)'\n((.*\n)+)/
   RSPEC_FAILURE_REGEX = /^'(.*)' FAILED\n((.+\n)+)/
   RSPEC_STACK_TRACE_REGEX = /^.*:\d+:.*$/
   RSPEC_STACK_TRACE_MAYBE_END_REGEX = /\n\nFinished.*$/
-  
+
   TEST_NAME_REGEX = /\S+/
   MESSAGE_REGEX = /\]\:\n([\s\S]+)/
   STACK_TRACE_REGEX = /\[([\s\S]*?)\]\:/
@@ -19,16 +26,26 @@ class BuildLogParser
   end
 
   def errors
-    test_errors + rspec_errors
+    test_errors + rspec_errors + test_new_errors
   end
 
   def test_errors
     test_errors = []
-    
+
     @log.scan(TEST_ERROR_REGEX) do |match|
       test_errors << TestErrorEntry.create_error($1, $2, $3)
     end
-  
+
+    return test_errors
+  end
+
+  def test_new_errors
+    test_errors = []
+
+    @log.scan(TEST_NEW_ERROR_REGEX) do |match|
+      test_errors << TestErrorEntry.create_error($1, $2, $3)
+    end
+
     return test_errors
   end
 
@@ -48,9 +65,26 @@ class BuildLogParser
   end
 
   def failures
-    test_failures + rspec_failures
+    test_failures + rspec_failures + test_new_failures
   end
-   
+
+  def test_new_failures
+    test_failures = []
+
+    @log.scan(TEST_NEW_FAILURE_REGEX) do |text|
+      content = $1
+      begin
+        test_name = content.match(TEST_NEW_NAME_REGEX).to_s
+        message = content.match(TEST_NEW_MESSAGE_REGEX)[1]
+        stack_trace = content.match(TEST_NEW_STACK_TRACE_REGEX)[1]
+        test_failures << TestErrorEntry.create_failure(test_name, message, stack_trace)
+      rescue Exception => e
+        # Do Nothing, Pattern does not match
+      end
+    end
+
+    test_failures
+  end
   def test_failures
     test_failures = []
 
@@ -70,7 +104,7 @@ class BuildLogParser
 
     test_failures
   end
-  
+
   def rspec_failures
     failures = []
     [@log.split(/\d+\)/)[1..-1]].compact.flatten.each do |issue_content|
@@ -82,7 +116,7 @@ class BuildLogParser
       end
     end
     failures
-  end  
+  end
 
   def failures_and_errors
     failures + errors

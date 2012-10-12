@@ -2,6 +2,62 @@ require 'test_helper'
 
 class BuildLogParserTest < ActiveSupport::TestCase
 
+LOG_OUTPUT_NEW_TEST_UNIT = <<EOF
+Loaded suite test/integration/signup_test
+Started
+F
+===============================================================================
+Failure: blah.
+  kjdflas
+  adfsjkl
+  lkdas
+test_flunk(SignupTest)
+test/integration/signup_test.rb:111:in `test_flunk'
+     108:   end
+     109:
+     110:   def test_flunk
+  => 111:     flunk("blah")
+     112:   end
+     113:
+     114:   protected
+/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/activesupport-2.2.3/lib/active_support/testing/setup_and_teardown.rb:94:in `__send__'
+/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/activesupport-2.2.3/lib/active_support/testing/setup_and_teardown.rb:94:in `run'
+/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/actionpack-2.2.3/lib/action_controller/integration.rb:597:in `run'
+===============================================================================
+E
+===============================================================================
+Error: test_v3_artist_signup(SignupTest)
+  NoMethodError: undefined method `d' for #<ActionController::Integration::Session:0x878c1e0>
+/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/actionpack-2.2.3/lib/action_controller/test_process.rb:471:in `method_missing'
+/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/actionpack-2.2.3/lib/action_controller/integration.rb:498:in `__send__'
+/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/actionpack-2.2.3/lib/action_controller/integration.rb:498:in `method_missing'
+test/integration/signup_test.rb:9:in `test_v3_artist_signup'
+      6:
+      7:   # New V3 Signup
+      8:   def test_v3_artist_signup
+  =>  9:     d-
+     10:     # setup Artist to force successful verify of recaptcha
+     11:     Artist.any_instance.stubs(:verify_recaptcha).returns(true)
+     12:     GateKeeper.stubs(:open_for?).returns(true)
+/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/activesupport-2.2.3/lib/active_support/testing/setup_and_teardown.rb:94:in `__send__'
+/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/activesupport-2.2.3/lib/active_support/testing/setup_and_teardown.rb:94:in `run'
+/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/actionpack-2.2.3/lib/action_controller/integration.rb:597:in `run'
+===============================================================================
+
+
+Finished in 2.867201 seconds.
+
+2 tests, 1 assertions, 1 failures, 1 errors, 0 pendings, 0 omissions, 0 notifications
+0% passed
+
+0.70 tests/s, 0.35 assertions/s
+EOF
+
+PARSED_NEW_OUTPUT_EXPECTED = "---\n- !ruby/struct:TestErrorEntry\n  type: Failure\n  test_name: test_flunk(SignupTest)\n  message: ! \"blah.\\n  kjdflas\\n  adfsjkl\\n  lkdas\"\n  stacktrace: ! \"\\ntest/integration/signup_test.rb:111:in `test_flunk'\\n     108:\n    \\  end\\n     109:\\n     110:   def test_flunk\\n  => 111:     flunk(\\\"blah\\\")\\n\n    \\    112:   end\\n     113:\\n     114:   protected\\n/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/activesupport-2.2.3/lib/active_support/testing/setup_and_teardown.rb:94:in\n    `__send__'\\n/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/activesupport-2.2.3/lib/active_support/testing/setup_and_teardown.rb:94:in\n    `run'\\n/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/actionpack-2.2.3/lib/action_controller/integration.rb:597:in\n    `run'\"\n- !ruby/struct:TestErrorEntry\n  type: Error\n  test_name: ! ' test_v3_artist_signup(SignupTest)'\n  message: ! '  NoMethodError: undefined method `d'' for #<ActionController::Integration::Session:0x878c1e0>\n\n'\n  stacktrace: ! \"/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/actionpack-2.2.3/lib/action_controller/test_process.rb:471:in\n    `method_missing'\\n/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/actionpack-2.2.3/lib/action_controller/integration.rb:498:in\n    `__send__'\\n/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/actionpack-2.2.3/lib/action_controller/integration.rb:498:in\n    `method_missing'\\ntest/integration/signup_test.rb:9:in `test_v3_artist_signup'\\n\n    \\     6:\\n      7:   # New V3 Signup\\n      8:   def test_v3_artist_signup\\n  =>\n    \\ 9:     d-\\n     10:     # setup Artist to force successful verify of recaptcha\\n\n    \\    11:     Artist.any_instance.stubs(:verify_recaptcha).returns(true)\\n     12:\n    \\    GateKeeper.stubs(:open_for?).returns(true)\\n/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/activesupport-2.2.3/lib/active_support/testing/setup_and_teardown.rb:94:in\n    `__send__'\\n/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/activesupport-2.2.3/lib/active_support/testing/setup_and_teardown.rb:94:in\n    `run'\\n/home/drasch/.rvm/gems/ree-1.8.7-2012.02@reverbnation/gems/actionpack-2.2.3/lib/action_controller/integration.rb:597:in\n    `run'\"\n"
+
+
+
+
 LOG_OUTPUT_WITH_NO_TEST_FAILURE = <<EOF
 Started
 ..................................................................................
@@ -310,7 +366,7 @@ EOF
       failures = BuildLogParser.new(LOG_OUTPUT_WITH_TEST_FAILURE_ON_UNIX).failures
       assert_equal [expected_first_test_failure_on_unix, expected_second_test_failure], failures
     end
-          
+
     test "should correctly parse mocha test failures" do
       failures = BuildLogParser.new(LOG_OUTPUT_WITH_MOCK_TEST_FAILURE).failures
       assert_equal [expected_mock_test_failure], failures
@@ -360,6 +416,12 @@ EOF
   end
 
   context "#failures_and_errors" do
+
+    test "should process multiple errors and failures new test::unit" do
+      failures_and_errors = BuildLogParser.new(LOG_OUTPUT_NEW_TEST_UNIT).failures_and_errors
+      assert_equal YAML.load(PARSED_NEW_OUTPUT_EXPECTED) , failures_and_errors
+    end
+
     test "should find no RSpec failures with a successful build" do
       assert BuildLogParser.new(LOG_OUTPUT_OF_SUCCESSFUL_RSPEC_RUN).failures_and_errors.empty?
     end
